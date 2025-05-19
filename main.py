@@ -15,6 +15,7 @@ from langchain.chains import create_retrieval_chain
 from langchain_core.messages import HumanMessage, AIMessage
 import os
 
+
 app = Flask(__name__, static_folder=".", template_folder=".")
 CORS(app)
 
@@ -59,11 +60,11 @@ db = Chroma(client=client, collection_name="collection", embedding_function=DefC
 retriever = db.as_retriever(search_kwargs={"k": 5})
 
 # Create LLM
-llm = OllamaLLM(model="llama3.1", num_gpu=1, device="cuda")
+llm = OllamaLLM(model="llama3.1", num_gpu=1, temperature=0.5)
 
 # Prompt to generate search query for retriever
 prompt_search_query = ChatPromptTemplate.from_messages([
-    MessagesPlaceholder(variable_name="chat_history", n_messages=10),
+    MessagesPlaceholder(variable_name="chat_history", n_messages=5),
     ("user", "{input}"),
     ("user", "Given the above conversation, generate a search query to look up to get information relevant to the conversation")
 ])
@@ -74,7 +75,7 @@ retriever_chain = create_history_aware_retriever(llm, retriever, prompt_search_q
 # Prompt to get response from LLM based on chat history
 prompt_get_answer = ChatPromptTemplate.from_messages([
     ("system", "Answer the user's questions based on the below context:\\n\\n{context}"),
-    MessagesPlaceholder(variable_name="chat_history", n_messages=10),
+    MessagesPlaceholder(variable_name="chat_history", n_messages=5),
     ("user", "{input}"),
 ])
 
